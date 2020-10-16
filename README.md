@@ -52,6 +52,14 @@ Install Python Flask dependency
 - Copy app.py or download it from source repository
 - Configure database credentials and parameters 
 
+[NOTE]: While installing flask if you get error 'locale.Error: unsupported locale setting'. 
+        Then use below commands before installing flask
+        #export LC_ALL="en_US.UTF-8"
+        #export LC_CTYPE="en_US.UTF-8"
+        #sudo dpkg-reconfigure locales
+        Make sure to match the .UTF-8 part to the actual syntax found in the output of 'locale -a' 
+
+
 ## 5. Start Web Server
 
 Start web server
