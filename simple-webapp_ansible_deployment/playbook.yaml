@@ -1,0 +1,66 @@
+- name : Deploy a web application
+  hosts: db_webserver1 
+  tasks:
+    - name: Install Web server
+      apt: name={{ item }} state=present
+      with_items:
+        - python
+        - python-setuptools
+        - python-dev
+        - build-essential 
+        - python-pip 
+        - python-mysqldb
+      become: yes
+
+    - name: Install Mysql DB servers
+      apt: name={{ item }} state=present
+      with_items:
+          - mysql-server
+          - mysql-client
+      become: yes
+
+      #    - name: "Start DB Sevice"
+      #service:
+      #  name: mysql
+      #  state: started
+      #  enabled: yes
+      #become: yes
+      #
+    - name: "Start DB Sevice"
+      shell: service mysql start
+      become: yes
+
+    - name: Create DB User
+      mysql_user:
+        name: db_user # required. name of the user (role) to add or remove
+        state: present # not required. choices: present;absent. Whether the user should exist.  When C(absent), removes the user.
+        password: Passw0rd # not required. set the user's password.
+        connect_timeout: 30 # not required. The connection timeout when connecting to the MySQL server.
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        priv: '*.*:ALL'
+        host: '%'
+      become: yes
+
+    - name: "Create DB"
+      mysql_db:
+        login_user: db_user # not required. The username used to authenticate with.
+        login_password: Passw0rd
+            # password : Passw0rd # not required. The password used to authenticate with.
+        name: employee_db 
+        state: present # not required. choices: present;absent;dump;import. The database state
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Install Flask Dependencies
+      pip: name="{{item}}"
+      with_items:
+        - flask
+        - flask-mysql
+      become: yes
+    - name: copy source code
+      copy:
+        dest: /opt/app.py 
+        src: app.py 
+      become: yes
+
+    - name: start webserver
+      shell: FLASK_APP=/opt/app.py nohup flask run --host=0.0.0.0 &
